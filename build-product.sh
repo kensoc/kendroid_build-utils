@@ -99,8 +99,12 @@ function BuildKernel()
 	
 	echo -e "${B} Building kernel modules here ${NC}"
 	make ARCH=arm CROSS_COMPILE=arm-eabi- modules
+	
+	# Odroidxu3 dev hardware specific custom module build - Start
 	make ARCH=arm CROSS_COMPILE=arm-eabi- -C ${PWD} M=${ANDROID_SRC}/hardware/wifi/realtek/drivers/8192cu/rtl8xxx_CU
 	make -C ../../../hardware/backports ARCH=arm CROSS_COMPILE=arm-eabi- KLIB_BUILD=${PWD} defconfig-odroidxu3
+	# Odroidxu3 dev hardware specific custom module build - End
+
 	ExitOnError
 	BUILD_END_TIME=`date +%s`
 	
@@ -154,30 +158,33 @@ function CreateAndroidFs()
 	echo -e "${B} cp -dprf root/* android_rootfs/.${NC}"
 	cp -dprf root/* android_rootfs/.
 
-	sleep 3
+	sleep 1
 
 	echo -e "${B} cp -dprf system/* android_rootfs/system/. ${NC}"
 	cp -dprf system/* android_rootfs/system/.
 
-	sleep 5
+	sleep 1
 	
 	echo -e "${B} cp -dprf data/* android_rootfs/data/. ${NC}"
 	cp -dprf data/* android_rootfs/data/.
 
-	sleep 2
+	sleep 1
 
 	echo -e "${B} mkdir -p android_rootfs/system/lib/modules/backports ${NC}"
 	mkdir -p android_rootfs/system/lib/modules/backports
 
 	echo -e "${B} Copying all kernel modules to android_rootfs/system/lib/modules/ ${NC}"
 	find ${KERNEL_DIR} -name *.ko | xargs -i cp {} android_rootfs/system/lib/modules/
+
 	
+	# Odroidxu3 dev hardware specific custom module build - Start
 	echo -e "${B} Copying all moduers under hardware to android_rootfs/system/lib/modules/ ${NC}"
 	find ${ANDROID_SRC}/hardware/wifi/realtek/drivers/8192cu/rtl8xxx_CU -name *.ko | xargs -i cp {} android_rootfs/system/lib/modules
 	echo -e "${B} Copying all modules from hardware/backport to android_rootfs/system/lib/modules/backports ${NC}"
 	find ${ANDROID_SRC}/hardware/backports -name *.ko | xargs -i cp {} android_rootfs/system/lib/modules/backports
+	# Odroidxu3 dev hardware specific custom module build - End
 
-	sleep 2
+	sleep 1
 
 	echo -e "${B} Executing build/tools/mktarball.sh  ${NC}"
 	../../../../build/tools/mktarball.sh ../../../host/linux-x86/bin/fs_get_stats android_rootfs . rootfs rootfs.tar.bz2
